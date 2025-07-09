@@ -1,0 +1,18 @@
+[package]
+name = "coastal_dynamics"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dotenv = "0.15"
+plotters = "0.3"
+polars = {version = "0.49", features = ["ipc"]}
+rand = "0.9"
+rand_distr = "0.5"
+reqwest = {version = "0.12", features = ["json"]}
+serde = {version = "1.0", features = ["derive"]}
+serde_json = "1.0"
+tokio = {version = "1.0", features = ["full"]}
+
+[lints.clippy]
+needless_return = "allow"
