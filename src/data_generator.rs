@@ -1,4 +1,4 @@
-use crate::week_1::wave_stats::{WaveMeasurement, WaveTimeSeries};
+use crate::wave_stats::{WaveMeasurement, WaveTimeSeries};
 use rand::{rng, Rng};
 use rand_distr::{Distribution, Normal};
 

@@ -1,4 +1,4 @@
-use crate::week_1::wave_stats::{Wave, WaveStatistics, WaveTimeSeries};
+use crate::wave_stats::{Wave, WaveStatistics, WaveTimeSeries};
 use plotters::prelude::*;
 
 pub fn plot_wave_timeseries(

@@ -1,4 +1,4 @@
-use crate::week_1::wave_stats::{WaveMeasurement, WaveTimeSeries};
+use crate::wave_stats::{WaveMeasurement, WaveTimeSeries};
 use polars::io::ipc::{IpcReader, IpcWriter};
 use polars::prelude::*;
 use reqwest;
