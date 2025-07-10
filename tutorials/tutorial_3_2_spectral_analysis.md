@@ -29,14 +29,14 @@ MarineLabs uses spectral analysis to provide detailed wave forecasts, helping op
 #### Key Concepts
 
 **Frequency Domain Representation:**
-- Wave spectrum S(f): Energy density as function of frequency
-- Peak frequency fp: Frequency with maximum energy
-- Spectral moments: Mn = ∫ f^n S(f) df
+- Wave spectrum $S(f)$: Energy density as function of frequency
+- Peak frequency $f_p$: Frequency with maximum energy
+- Spectral moments: $M_n = \int f^n S(f) df$
 
 **Important Spectral Parameters:**
-- Significant wave height: Hs = 4√(m0)
-- Mean wave period: Tm02 = √(m0/m2)
-- Peak period: Tp = 1/fp
+- Significant wave height: $H_s = 4\sqrt{m_0}$
+- Mean wave period: $T_{m02} = \sqrt{m_0/m_2}$
+- Peak period: $T_p = 1/f_p$
 
 ### Part 2: Implementing FFT Analysis
 
@@ -206,9 +206,10 @@ impl SpectralAnalysis {
     /// Separate sea and swell components
     pub fn separate_sea_swell(&self, wind_speed: f64) -> WaveComponents {
         // Pierson-Moskowitz frequency for fully developed sea
+        // $f_m = 0.13 \cdot g / (2\pi U)$
         let fm = 0.13 * 9.81 / (2.0 * PI * wind_speed);
         
-        // Separation frequency (typically 1.2 * fm)
+        // Separation frequency (typically $1.2 \cdot f_m$)
         let separation_frequency = 1.2 * fm;
         
         // Split spectrum
@@ -321,7 +322,7 @@ pub fn jonswap_spectrum(
     gamma: f64,  // Peak enhancement factor (typically 3.3)
 ) -> f64 {
     // TODO: Implement JONSWAP formula
-    // S(f) = α * g^2 / (2π)^4 / f^5 * exp(-5/4 * (fp/f)^4) * γ^exp(...)
+    // $S(f) = \alpha \cdot \frac{g^2}{(2\pi)^4 f^5} \cdot \exp\left(-\frac{5}{4}\left(\frac{f_p}{f}\right)^4\right) \cdot \gamma^{\exp\left(-\frac{(f-f_p)^2}{2\sigma^2 f_p^2}\right)}$
 }
 ```
 

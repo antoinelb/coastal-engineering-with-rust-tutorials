@@ -28,18 +28,18 @@ In this tutorial, we'll build the foundation for a wave analysis system similar 
 #### Key Concepts Review
 
 **Wave Parameters:**
-- Wave height (H): Vertical distance from trough to crest
-- Wave period (T): Time between successive crests
-- Significant wave height (Hs): Average of highest 1/3 of waves
-- Maximum wave height (Hmax): Highest individual wave
+- Wave height ($H$): Vertical distance from trough to crest
+- Wave period ($T$): Time between successive crests
+- Significant wave height ($H_s$): Average of highest 1/3 of waves
+- Maximum wave height ($H_{max}$): Highest individual wave
 
 **Why These Matter:**
-- Port operations suspend when Hs exceeds safety thresholds
+- Port operations suspend when $H_s$ exceeds safety thresholds
 - Vessel scheduling depends on wave period (longer periods = safer conditions)
 - Extreme waves pose risks to infrastructure and vessels
 
 #### Questions to Consider
-1. Why is significant wave height (Hs) more useful than mean wave height for marine operations?
+1. Why is significant wave height ($H_s$) more useful than mean wave height for marine operations?
 2. How might climate change affect wave statistics along the BC coast?
 3. What environmental factors influence wave generation in the Strait of Georgia?
 
@@ -236,7 +236,7 @@ impl WaveTimeSeries {
         let mut sorted_waves = waves.clone();
         sorted_waves.sort_by(|a, b| b.height.partial_cmp(&a.height).unwrap());
 
-        // Calculate Hs (average of highest 1/3)
+        // Calculate $H_s$ (average of highest 1/3)
         let n_third = (sorted_waves.len() as f64 / 3.0).ceil() as usize;
         let hs = sorted_waves[..n_third]
             .iter()
@@ -244,9 +244,9 @@ impl WaveTimeSeries {
             .sum::<f64>() / n_third as f64;
 
         // Other statistics
-        let hmax = sorted_waves[0].height;
-        let hmean = waves.iter().map(|w| w.height).sum::<f64>() / waves.len() as f64;
-        let tmean = waves.iter().map(|w| w.period).sum::<f64>() / waves.len() as f64;
+        let hmax = sorted_waves[0].height;  // $H_{max}$
+        let hmean = waves.iter().map(|w| w.height).sum::<f64>() / waves.len() as f64;  // $H_{mean}$
+        let tmean = waves.iter().map(|w| w.period).sum::<f64>() / waves.len() as f64;  // $T_{mean}$
 
         Ok(WaveStatistics {
             hs,
@@ -295,8 +295,8 @@ pub fn generate_wave_data(
         
         // Add primary wave component
         let primary_amplitude = hs * 0.7;
-        let primary_frequency = 1.0 / peak_period;
-        elevation += primary_amplitude * (2.0 * std::f64::consts::PI * primary_frequency * t).sin();
+        let primary_frequency = 1.0 / peak_period;  // $f = 1/T$
+        elevation += primary_amplitude * (2.0 * std::f64::consts::PI * primary_frequency * t).sin();  // $A\sin(2\pi f t)$
         
         // Add secondary components
         for j in 1..5 {
@@ -455,9 +455,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Simulate different sea states
     let scenarios = vec![
-        ("Calm conditions", 0.5, 6.0),    // Hs=0.5m, T=6s
-        ("Moderate seas", 2.0, 8.0),       // Hs=2.0m, T=8s
-        ("Storm conditions", 4.5, 12.0),   // Hs=4.5m, T=12s
+        ("Calm conditions", 0.5, 6.0),    // $H_s = 0.5\text{m}$, $T = 6\text{s}$
+        ("Moderate seas", 2.0, 8.0),       // $H_s = 2.0\text{m}$, $T = 8\text{s}$
+        ("Storm conditions", 4.5, 12.0),   // $H_s = 4.5\text{m}$, $T = 12\text{s}$
     ];
 
     for (name, hs, period) in scenarios {
@@ -505,15 +505,15 @@ The Rayleigh distribution is commonly used to model wave heights. Implement:
 impl WaveStatistics {
     /// Calculate Rayleigh distribution parameters
     pub fn rayleigh_parameters(&self) -> (f64, f64) {
-        // TODO: Calculate scale parameter from Hrms
-        // Hrms = sqrt(mean of H^2)
-        // scale = Hrms / sqrt(pi/2)
+        // TODO: Calculate scale parameter from $H_{rms}$
+        // $H_{rms} = \sqrt{\overline{H^2}}$
+        // $\text{scale} = H_{rms} / \sqrt{\pi/2}$
     }
     
     /// Probability of exceeding given wave height
     pub fn exceedance_probability(&self, height: f64) -> f64 {
         // TODO: Use Rayleigh CDF
-        // P(H > h) = exp(-(h^2)/(2*scale^2))
+        // $P(H > h) = \exp\left(-\frac{h^2}{2\sigma^2}\right)$
     }
 }
 ```

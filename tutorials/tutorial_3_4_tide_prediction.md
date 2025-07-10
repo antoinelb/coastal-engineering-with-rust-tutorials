@@ -40,10 +40,10 @@ MarineLabs integrates tidal predictions with wave forecasts to provide complete 
 - **Diurnal**: One high/low per day (rare in Canada)
 
 **Important Periods:**
-- M2 (principal lunar): 12.42 hours
-- S2 (principal solar): 12.00 hours
-- K1 (diurnal): 23.93 hours
-- O1 (diurnal): 25.82 hours
+- $M_2$ (principal lunar): 12.42 hours
+- $S_2$ (principal solar): 12.00 hours
+- $K_1$ (diurnal): 23.93 hours
+- $O_1$ (diurnal): 25.82 hours
 
 ### Part 2: Core Tide Prediction Engine
 
@@ -187,11 +187,12 @@ impl TidePredictionEngine {
         let h3 = self.predict_height(station_name, t3)?;
         
         // Quadratic interpolation
+        // Fit parabola: $h(t) = at^2 + bt + c$
         let dt = (t2 - t1).num_seconds() as f64;
         let a = (h3 - 2.0 * h2 + h1) / (2.0 * dt * dt);
         let b = (h3 - h1) / (2.0 * dt);
         
-        let t_offset = -b / (2.0 * a);
+        let t_offset = -b / (2.0 * a);  // Extremum at $t = -b/(2a)$
         let extremum_time = t2 + Duration::seconds(t_offset as i64);
         let extremum_height = self.predict_height(station_name, extremum_time)?;
         
@@ -265,7 +266,7 @@ impl HarmonicAnalysis {
             
             let omega = 2.0 * PI * frequency; // radians per hour
             
-            // Least squares fit: h(t) = A*cos(ωt) + B*sin(ωt)
+            // Least squares fit: $h(t) = A\cos(\omega t) + B\sin(\omega t)$
             let mut sum_cos = 0.0;
             let mut sum_sin = 0.0;
             let mut sum_h_cos = 0.0;
@@ -427,6 +428,7 @@ impl TidePredictionEngine {
         let h2 = self.predict_height(station_name, time + dt)?;
         
         // Simple relationship: current proportional to water level change
+        // $\frac{dh}{dt} \approx \frac{h_2 - h_1}{2\Delta t}$
         let dh_dt = (h2 - h1) / (2.0 * dt.num_seconds() as f64 / 3600.0);
         
         // Empirical scaling (location-specific)
@@ -579,7 +581,7 @@ impl WaterLevelPredictor {
             wave_setup,
             wave_height,
             total: tide + surge + wave_setup,
-            extreme_level: tide + surge + wave_setup + 0.5 * wave_height, // Simplified
+            extreme_level: tide + surge + wave_setup + 0.5 * wave_height, // Simplified: $\eta_{extreme} = \eta_{tide} + \eta_{surge} + \eta_{setup} + 0.5 H_s$
         })
     }
 }
@@ -603,11 +605,11 @@ Implement the Form Factor to classify tidal regimes:
 ```rust
 impl TidalStation {
     pub fn calculate_form_factor(&self) -> f64 {
-        // Form Factor F = (K1 + O1) / (M2 + S2)
-        // F < 0.25: Semi-diurnal
-        // 0.25 < F < 1.5: Mixed semi-diurnal
-        // 1.5 < F < 3.0: Mixed diurnal
-        // F > 3.0: Diurnal
+        // Form Factor $F = \frac{K_1 + O_1}{M_2 + S_2}$
+        // $F < 0.25$: Semi-diurnal
+        // $0.25 < F < 1.5$: Mixed semi-diurnal
+        // $1.5 < F < 3.0$: Mixed diurnal
+        // $F > 3.0$: Diurnal
         // TODO: Implement
     }
 }

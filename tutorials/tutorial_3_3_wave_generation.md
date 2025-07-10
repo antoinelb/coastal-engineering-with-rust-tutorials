@@ -40,10 +40,10 @@ MarineLabs combines wind observations with wave physics to provide accurate fore
 - Fully developed sea: Energy input = dissipation
 
 **Important Parameters:**
-- Wind speed at 10m height (U10)
-- Fetch length (F)
-- Wind duration (t)
-- Water depth (h)
+- Wind speed at 10m height ($U_{10}$)
+- Fetch length ($F$)
+- Wind duration ($t$)
+- Water depth ($h$)
 
 ### Part 2: Implementing Wave Growth Models
 
@@ -52,8 +52,8 @@ MarineLabs combines wind observations with wave physics to provide accurate fore
 use std::f64::consts::PI;
 
 // Physical constants
-const G: f64 = 9.81;         // Gravitational acceleration (m/s²)
-const RHO_WATER: f64 = 1025.0; // Seawater density (kg/m³)
+const G: f64 = 9.81;         // Gravitational acceleration $g$ (m/s²)
+const RHO_WATER: f64 = 1025.0; // Seawater density $\rho$ (kg/m³)
 
 /// Wave generation parameters
 #[derive(Debug, Clone)]
@@ -81,12 +81,12 @@ pub struct WaveGeneration;
 impl WaveGeneration {
     /// Pierson-Moskowitz spectrum for fully developed seas
     pub fn pierson_moskowitz_hs(wind_speed: f64) -> f64 {
-        // PM relationship: Hs = 0.21 * U²/g
+        // PM relationship: $H_s = 0.21 \cdot U^2 / g$
         0.21 * wind_speed.powi(2) / G
     }
     
     pub fn pierson_moskowitz_fp(wind_speed: f64) -> f64 {
-        // Peak frequency: fp = 0.13 * g / U
+        // Peak frequency: $f_p = 0.13 \cdot g / U$
         0.13 * G / wind_speed
     }
     
@@ -96,15 +96,16 @@ impl WaveGeneration {
         let f = conditions.fetch;
         
         // Non-dimensional fetch
+        // $\chi = g F / U^2$
         let chi = G * f / u.powi(2);
         
         // JONSWAP relationships
-        let epsilon = 1.6e-3 * chi.powf(0.5);  // Non-dimensional energy
-        let nu = 3.5 * chi.powf(-0.33);        // Non-dimensional peak frequency
+        let epsilon = 1.6e-3 * chi.powf(0.5);  // Non-dimensional energy: $\varepsilon = 1.6 \times 10^{-3} \chi^{0.5}$
+        let nu = 3.5 * chi.powf(-0.33);        // Non-dimensional peak frequency: $\nu = 3.5 \chi^{-0.33}$
         
         // Convert to dimensional parameters
-        let hs = 4.0 * (epsilon * u.powi(4) / G.powi(2)).sqrt();
-        let fp = nu * G / u;
+        let hs = 4.0 * (epsilon * u.powi(4) / G.powi(2)).sqrt();  // $H_s = 4\sqrt{\varepsilon U^4 / g^2}$
+        let fp = nu * G / u;  // $f_p = \nu g / U$
         let tp = 1.0 / fp;
         
         // Check if fully developed
@@ -126,11 +127,12 @@ impl WaveGeneration {
         let t = conditions.duration;
         
         // Non-dimensional time
+        // $\tau = gt/U$
         let tau = G * t / u;
         
         // Duration-limited relationships
-        let epsilon = 4.3e-7 * tau.powf(0.7);
-        let nu = 0.2 * tau.powf(-0.22);
+        let epsilon = 4.3e-7 * tau.powf(0.7);  // $\varepsilon = 4.3 \times 10^{-7} \tau^{0.7}$
+        let nu = 0.2 * tau.powf(-0.22);  // $\nu = 0.2 \tau^{-0.22}$
         
         let hs = 4.0 * (epsilon * u.powi(4) / G.powi(2)).sqrt();
         let fp = nu * G / u;
@@ -167,12 +169,12 @@ impl WaveGeneration {
 pub struct WaveDispersion;
 
 impl WaveDispersion {
-    /// Deep water dispersion relation: ω² = gk
+    /// Deep water dispersion relation: $\omega^2 = gk$
     pub fn deep_water_phase_speed(wavelength: f64) -> f64 {
         (G * wavelength / (2.0 * PI)).sqrt()
     }
     
-    /// Finite depth dispersion relation: ω² = gk tanh(kh)
+    /// Finite depth dispersion relation: $\omega^2 = gk \tanh(kh)$
     pub fn finite_depth_phase_speed(wavelength: f64, depth: f64) -> f64 {
         let k = 2.0 * PI / wavelength;
         let omega_squared = G * k * (k * depth).tanh();
@@ -184,9 +186,10 @@ impl WaveDispersion {
     pub fn group_velocity(wavelength: f64, depth: f64) -> f64 {
         let k = 2.0 * PI / wavelength;
         let kh = k * depth;
+        // $n = \frac{1}{2}\left(1 + \frac{2kh}{\sinh(2kh)}\right)$
         let n = 0.5 * (1.0 + 2.0 * kh / kh.sinh() / kh.cosh());
         let c = Self::finite_depth_phase_speed(wavelength, depth);
-        n * c
+        n * c  // $c_g = nc$
     }
     
     /// Check if deep water approximation is valid
@@ -238,10 +241,11 @@ impl WavePacket {
         let mut k = omega_squared / G;
         
         // Newton-Raphson iteration
+        // Solve: $\omega^2 - gk\tanh(kh) = 0$
         for _ in 0..10 {
             let f = omega_squared - G * k * (k * depth).tanh();
             let df = -G * ((k * depth).tanh() + k * depth * (1.0 - (k * depth).tanh().powi(2)));
-            k -= f / df;
+            k -= f / df;  // $k_{n+1} = k_n - f(k_n)/f'(k_n)$
         }
         
         2.0 * PI / k
@@ -258,16 +262,17 @@ pub fn jonswap_spectrum(f: f64, hs: f64, tp: f64, gamma: f64) -> f64 {
     let alpha = 0.0081; // Phillips constant
     
     // Pierson-Moskowitz part
+    // $S_{PM}(f) = \alpha g^2 (2\pi)^{-4} f^{-5} \exp\left(-1.25 (f_p/f)^4\right)$
     let pm = alpha * G.powi(2) / (2.0 * PI).powi(4) / f.powi(5) 
         * (-1.25 * (fp / f).powi(4)).exp();
     
     // JONSWAP peak enhancement
-    let sigma = if f <= fp { 0.07 } else { 0.09 };
+    let sigma = if f <= fp { 0.07 } else { 0.09 };  // $\sigma = 0.07$ for $f \leq f_p$, $0.09$ for $f > f_p$
     let a = (-(f - fp).powi(2) / (2.0 * sigma.powi(2) * fp.powi(2))).exp();
-    let enhancement = gamma.powf(a);
+    let enhancement = gamma.powf(a);  // $\gamma^{\exp\left(-\frac{(f-f_p)^2}{2\sigma^2 f_p^2}\right)}$
     
-    // Scale to match Hs
-    let m0_factor = hs.powi(2) / 16.0;
+    // Scale to match $H_s$
+    let m0_factor = hs.powi(2) / 16.0;  // $m_0 = H_s^2 / 16$
     
     pm * enhancement * m0_factor
 }

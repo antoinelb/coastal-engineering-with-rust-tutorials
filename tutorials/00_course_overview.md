@@ -160,6 +160,21 @@ Throughout the tutorials, we'll consider:
 - **Sustainable development** strategies
 - **Environmental justice** in coastal planning
 
+### Mathematical Notation Standards
+
+All tutorials consistently use LaTeX notation for mathematical symbols and equations. This ensures:
+- **Clarity**: Mathematical concepts are unambiguous
+- **Consistency**: Same notation throughout all tutorials
+- **Professional presentation**: Aligns with academic standards
+- **Readability**: Complex equations are properly formatted
+
+Examples:
+- Wave dispersion relation: $\omega^2 = gk \tanh(kh)$
+- Significant wave height: $H_s = 4\sqrt{m_0}$
+- JONSWAP spectrum: $S(f) = \alpha g^2 (2\pi)^{-4} f^{-5} \exp\left(-\frac{5}{4}\left(\frac{f_p}{f}\right)^4\right) \cdot \gamma^r$
+
+This notation standard makes the mathematical content accessible and professional.
+
 ### Assessment Strategy
 
 Each tutorial includes:
