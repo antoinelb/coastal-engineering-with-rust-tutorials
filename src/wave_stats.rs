@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fmt;
 
@@ -22,12 +23,13 @@ pub struct Wave {
     pub period: f64, // (s)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct WaveMeasurement {
     pub time: f64,      // (s)
     pub elevation: f64, // (m)
 }
 
+#[derive(Deserialize, Serialize)]
 pub struct WaveTimeSeries {
     pub measurements: Vec<WaveMeasurement>,
     pub sampling_rate: f64, // Hz
@@ -173,4 +175,8 @@ pub struct SeasonalWaveClimate {
     pub winter_hs: f64,
     pub summer_hs: f64,
     pub storm_frequency: f64,
+}
+
+impl SeasonalWaveClimate {
+    pub fn from_annual_data(data: WaveTimeSeries)
 }
