@@ -15,6 +15,8 @@ By completing this series, you will:
 
 ### Tutorial Structure
 
+**Important: All tutorials are designed to be independent and self-contained.** While they are numbered to suggest a logical learning progression, you can complete them in any order based on your interests and needs. Each tutorial includes all necessary code and data structures, so no previous tutorials are required.
+
 #### Chapter 3: Ocean Waves (4 tutorials)
 - **3.1** Wave Statistics and Rust Fundamentals (Week 1)
 - **3.2** Spectral Analysis Implementation (Week 2)
@@ -165,14 +167,15 @@ Each tutorial includes:
 2. **Coding Exercises**: Progressive Rust implementations
 3. **Data Analysis**: Work with real coastal datasets
 4. **Visualization Tasks**: Create meaningful plots
-5. **Integration Projects**: Combine concepts across chapters
+5. **Integration Projects**: Optional projects that combine concepts across chapters (for those who complete multiple tutorials)
 
 ### Getting Started
 
-Begin with Tutorial 3.1, which introduces both wave statistics and Rust fundamentals. Ensure you have:
+You can begin with any tutorial that interests you, as each is self-contained. However, if you're new to both Rust and coastal dynamics, Tutorial 3.1 provides a good introduction to both. Before starting any tutorial, ensure you have:
 1. Completed the development environment setup
-2. Downloaded the first dataset (provided in Tutorial 3.1)
-3. Allocated 1-2 hours for the tutorial
-4. Have the textbook Chapter 3.1-3.4 available for reference
+2. The relevant textbook chapter available for reference
+3. Allocated appropriate time (see schedule above)
+
+Each tutorial will provide or generate its own datasets, so you don't need to worry about dependencies between tutorials.
 
 Let's build tools that contribute to safer, more resilient coastlines!

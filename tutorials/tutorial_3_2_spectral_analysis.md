@@ -10,9 +10,9 @@ By the end of this tutorial, you will:
 5. Apply spectral analysis to vessel motion prediction
 
 ### Prerequisites
-- Completed Tutorial 3.1
 - Read Coastal Dynamics Ch. 3.5-3.6
 - Understanding of Fourier transforms
+- Rust development environment set up
 
 ### Introduction: Why Spectral Analysis?
 
@@ -44,6 +44,68 @@ MarineLabs uses spectral analysis to provide detailed wave forecasts, helping op
 // In src/spectral_analysis.rs
 use rustfft::{FftPlanner, num_complex::Complex};
 use std::f64::consts::PI;
+use std::error::Error;
+use std::fmt;
+
+/// Custom error type for wave analysis
+#[derive(Debug)]
+pub enum WaveError {
+    InsufficientData,
+    InvalidMeasurement(String),
+}
+
+impl fmt::Display for WaveError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            WaveError::InsufficientData => write!(f, "Insufficient wave data"),
+            WaveError::InvalidMeasurement(msg) => write!(f, "Invalid measurement: {}", msg),
+        }
+    }
+}
+
+impl Error for WaveError {}
+
+/// Represents a single wave measurement
+#[derive(Debug, Clone)]
+pub struct WaveMeasurement {
+    pub time: f64,      // seconds since start
+    pub elevation: f64, // meters
+}
+
+/// Container for wave time series data
+pub struct WaveTimeSeries {
+    pub measurements: Vec<WaveMeasurement>,
+    pub sampling_rate: f64, // Hz
+}
+
+impl WaveTimeSeries {
+    /// Create a new wave time series
+    pub fn new(sampling_rate: f64) -> Self {
+        WaveTimeSeries {
+            measurements: Vec::new(),
+            sampling_rate,
+        }
+    }
+
+    /// Add a measurement
+    pub fn add_measurement(&mut self, measurement: WaveMeasurement) {
+        self.measurements.push(measurement);
+    }
+
+    /// Calculate mean water level
+    pub fn mean_level(&self) -> Result<f64, WaveError> {
+        if self.measurements.is_empty() {
+            return Err(WaveError::InsufficientData);
+        }
+
+        let sum: f64 = self.measurements
+            .iter()
+            .map(|m| m.elevation)
+            .sum();
+
+        Ok(sum / self.measurements.len() as f64)
+    }
+}
 
 pub struct SpectralAnalysis {
     pub frequencies: Vec<f64>,
@@ -194,6 +256,58 @@ pub struct DirectionalSpectrum {
 // We'll simulate for learning purposes
 ```
 
+### Part 4: Wave Data Generation
+
+For testing our spectral analysis, let's create a data generator:
+
+```rust
+// In src/data_generator.rs
+use rand::{thread_rng, Rng};
+use rand_distr::{Normal, Distribution};
+use crate::spectral_analysis::{WaveMeasurement, WaveTimeSeries};
+
+/// Generate synthetic wave data
+pub fn generate_wave_data(
+    duration: f64,      // seconds
+    sampling_rate: f64, // Hz
+    hs: f64,           // target significant wave height
+    peak_period: f64,  // dominant wave period
+) -> WaveTimeSeries {
+    let mut rng = thread_rng();
+    let mut time_series = WaveTimeSeries::new(sampling_rate);
+    
+    let dt = 1.0 / sampling_rate;
+    let n_samples = (duration * sampling_rate) as usize;
+    
+    // Generate using superposition of sinusoids
+    for i in 0..n_samples {
+        let t = i as f64 * dt;
+        let mut elevation = 0.0;
+        
+        // Add primary wave component
+        let primary_amplitude = hs * 0.7;
+        let primary_frequency = 1.0 / peak_period;
+        elevation += primary_amplitude * (2.0 * std::f64::consts::PI * primary_frequency * t).sin();
+        
+        // Add secondary components
+        for j in 1..5 {
+            let amplitude = primary_amplitude / (j as f64 * 1.5);
+            let frequency = primary_frequency * (0.8 + 0.1 * j as f64);
+            let phase = rng.gen::<f64>() * 2.0 * std::f64::consts::PI;
+            elevation += amplitude * (2.0 * std::f64::consts::PI * frequency * t + phase).sin();
+        }
+        
+        // Add noise
+        let noise_dist = Normal::new(0.0, hs * 0.1).unwrap();
+        elevation += noise_dist.sample(&mut rng);
+        
+        time_series.add_measurement(WaveMeasurement { time: t, elevation });
+    }
+    
+    time_series
+}
+```
+
 ### Exercises
 
 #### Exercise 1: JONSWAP Spectrum
@@ -215,6 +329,15 @@ pub fn jonswap_spectrum(
 Analyze wave groupiness using spectral bandwidth:
 
 ```rust
+/// Represents an individual wave (for wave group analysis)
+#[derive(Debug, Clone)]
+pub struct Wave {
+    pub height: f64,    // meters
+    pub period: f64,    // seconds
+    pub crest: f64,     // maximum elevation
+    pub trough: f64,    // minimum elevation
+}
+
 pub struct WaveGroupParameters {
     pub groupiness_factor: f64,
     pub spectral_width: f64,

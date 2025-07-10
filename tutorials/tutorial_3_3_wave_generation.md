@@ -10,9 +10,9 @@ By the end of this tutorial, you will:
 5. Apply to fetch-limited conditions in Canadian waters
 
 ### Prerequisites
-- Completed Tutorials 3.1 and 3.2
 - Read Coastal Dynamics Ch. 3.5-3.6
 - Understanding of wave dispersion relationships
+- Rust development environment set up
 
 ### Introduction: From Wind to Waves
 
@@ -49,8 +49,11 @@ MarineLabs combines wind observations with wave physics to provide accurate fore
 
 ```rust
 // In src/wave_generation.rs
-use crate::constants::{G, RHO_WATER};
 use std::f64::consts::PI;
+
+// Physical constants
+const G: f64 = 9.81;         // Gravitational acceleration (m/s²)
+const RHO_WATER: f64 = 1025.0; // Seawater density (kg/m³)
 
 /// Wave generation parameters
 #[derive(Debug, Clone)]
@@ -249,6 +252,26 @@ impl WavePacket {
 ### Part 4: Simulating Wave Fields
 
 ```rust
+/// JONSWAP spectrum implementation
+pub fn jonswap_spectrum(f: f64, hs: f64, tp: f64, gamma: f64) -> f64 {
+    let fp = 1.0 / tp;
+    let alpha = 0.0081; // Phillips constant
+    
+    // Pierson-Moskowitz part
+    let pm = alpha * G.powi(2) / (2.0 * PI).powi(4) / f.powi(5) 
+        * (-1.25 * (fp / f).powi(4)).exp();
+    
+    // JONSWAP peak enhancement
+    let sigma = if f <= fp { 0.07 } else { 0.09 };
+    let a = (-(f - fp).powi(2) / (2.0 * sigma.powi(2) * fp.powi(2))).exp();
+    let enhancement = gamma.powf(a);
+    
+    // Scale to match Hs
+    let m0_factor = hs.powi(2) / 16.0;
+    
+    pm * enhancement * m0_factor
+}
+
 /// Complete wave field simulation
 pub struct WaveField {
     pub packets: Vec<WavePacket>,
@@ -346,26 +369,6 @@ impl WaveField {
             None
         }
     }
-}
-
-/// JONSWAP spectrum implementation
-pub fn jonswap_spectrum(f: f64, hs: f64, tp: f64, gamma: f64) -> f64 {
-    let fp = 1.0 / tp;
-    let alpha = 0.0081; // Phillips constant
-    
-    // Pierson-Moskowitz part
-    let pm = alpha * G.powi(2) / (2.0 * PI).powi(4) / f.powi(5) 
-        * (-1.25 * (fp / f).powi(4)).exp();
-    
-    // JONSWAP peak enhancement
-    let sigma = if f <= fp { 0.07 } else { 0.09 };
-    let a = (-(f - fp).powi(2) / (2.0 * sigma.powi(2) * fp.powi(2))).exp();
-    let enhancement = gamma.powf(a);
-    
-    // Scale to match Hs
-    let m0_factor = hs.powi(2) / 16.0;
-    
-    pm * enhancement * m0_factor
 }
 ```
 

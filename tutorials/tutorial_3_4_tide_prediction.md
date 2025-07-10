@@ -10,9 +10,9 @@ By the end of this tutorial, you will:
 5. Integrate tides with other coastal processes
 
 ### Prerequisites
-- Completed Tutorials 3.1-3.3
 - Read Coastal Dynamics Ch. 3.7-3.9
 - Basic understanding of harmonic analysis
+- Rust development environment set up
 
 ### Introduction: The Rhythm of the Coast
 
