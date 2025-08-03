@@ -4,6 +4,8 @@ This is a series of tutorials to learn coastal engineering and rust made with Cl
 
 This comprehensive program combines coastal engineering theory with practical Rust programming, focusing on applications relevant to Canadian waters and MarineLabs' coastal intelligence platform.
 
+**These tutorials weren't completed in profit of instead designing a rust platform to implement the subjects in the Coastal Dynamics textbook. This is because Claude had trouble creating tutorials without errors and providing correct scaffolding to truly learn the subject.**
+
 ## Tutorial Structure
 
 ### Phase 1: Foundation
