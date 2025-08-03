@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+ndarray = "0.16"
+ndarray-linalg = "0.17"
+serde = {version = "1.0", features = ["derive"]}
+statrs = "0.18"
 
 [lints.clippy]
 needless_return = "allow"
